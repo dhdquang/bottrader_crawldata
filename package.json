@@ -1,7 +1,7 @@
 {
   "name": "crawl-data",
   "version": "1.0.0",
-  "description": "crawl data history",
+  "description": "Bot trader - crawl data from the website CafeF",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

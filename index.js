@@ -23,7 +23,12 @@ switch (args[0]) {
     console.log('Sorry, that is not something I know how to do.');
 }
 
-async function downloadDailyInfo(date, stockExchange = 'HSX') {
+/**
+ * download data daily
+ * @param {*} date default to day
+ * @param {*} stockExchange default to stock exchange "HSX"
+ */
+async function downloadDailyInfo(date = new Date(), stockExchange = 'HSX') {
   try {
     console.log('download');
     const mdate = moment(date);

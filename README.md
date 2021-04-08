@@ -1,8 +1,8 @@
-# bottrader_crawldata
+# Crawldata
 
-bot trader
+Bot trader - crawl data from the website CafeF
 
-## Crawler
+## Run
 
   1. Add file .env
      - DB_CONNECTION_STRING=mongodb+srv://<username>:<pass>@xxxx.xxx.mongodb.net/bottrader?retryWrites=true&w=majority
