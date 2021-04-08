@@ -14,7 +14,6 @@ const args = process.argv.slice(2);
 console.info('myArgs: ', args);
 switch (args[0]) {
   case 'download':
-    console.log(args[1], 'download data');
     downloadDailyInfo(args[1]);
     break;
   case 'downloads':
@@ -26,16 +25,20 @@ switch (args[0]) {
 
 async function downloadDailyInfo(date, stockExchange = 'HSX') {
   try {
+    console.log('download');
     const mdate = moment(date);
     const date1 = mdate.format('YYYYMMDD');
     const date2 = mdate.format('DDMMYYYY');
     const date3 = mdate.format('DD.MM.YYYY');
+    const url = `https://images1.cafef.vn/data/${date1}/CafeF.SolieuGD.${date2}.zip`;
+    const downloadPath = path(`./downloads/${date1}.zip`);
+    const filedata = path(`./data/CafeF.${stockExchange}.${date3}.csv`);
     if (!mdate.isValid()) {
-      console.log('not worker ');
+      console.log(`invalid ${date}`);
       return;
     }
     if (mdate.weekday() === 6 || mdate.weekday() === 0) {
-      console.log('not worker ');
+      console.log('not worker date');
       return;
     }
     const dailyInfo = await DailyInfo.findOne({ date: date1 });
@@ -43,33 +46,37 @@ async function downloadDailyInfo(date, stockExchange = 'HSX') {
       console.log('data exists');
       return;
     }
-    const options = {
-      method: 'GET',
-      url: `https://images1.cafef.vn/data/${date1}/CafeF.SolieuGD.${date2}.zip`,
-      headers:
-      {
-        'cache-control': 'no-cache',
-      },
-    };
-    const downloadPath = path(`./downloads/${date1}.zip`);
-    await new Promise(((resolve) => request(options, (error) => {
-      if (error) throw new Error(error);
-    }).pipe(fs.createWriteStream(downloadPath))
-      .on('finish', resolve)));
-
+    await downloadCafefZip(url, downloadPath);
     await extract(downloadPath, { dir: path('./data') });
     console.log('Extraction complete');
+    await insertDailyInfo(filedata);
+  } catch (error) {
+    console.log('err: ', error);
+  }
 
+  async function insertDailyInfo(filedata) {
     const data = await csv({
       noheader: false,
       headers: ['ticker', 'date', 'open', 'high', 'low', 'close', 'volume', 'stockEx'],
     }).subscribe((object) => {
       object.stockEx = stockExchange;
-    }).fromFile(path(`./data/CafeF.${stockExchange}.${date3}.csv`));
+    }).fromFile(filedata);
     await DailyInfo.insertMany(data);
     console.log('Insert complete');
-  } catch (e) {
-    console.log('err: ', e);
+  }
+
+  async function downloadCafefZip(url, downloadPath) {
+    const options = {
+      method: 'GET',
+      url,
+      headers: {
+        'cache-control': 'no-cache',
+      },
+    };
+    await new Promise(((resolve) => request(options, (error) => {
+      if (error) { throw new Error(error); }
+    }).pipe(fs.createWriteStream(downloadPath))
+      .on('finish', resolve)));
   }
 }
 
